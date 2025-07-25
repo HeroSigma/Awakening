@@ -903,7 +903,7 @@ void DefenseIV_(u32 sourceLine, u32 defenseIV);
 void SpAttackIV_(u32 sourceLine, u32 spAttackIV);
 void SpDefenseIV_(u32 sourceLine, u32 spDefenseIV);
 void SpeedIV_(u32 sourceLine, u32 speedIV);
-void Item_(u32 sourceLine, u32 item);
+void Item_(u32 sourceLine, enum ItemId item);
 void Moves_(u32 sourceLine, u16 moves[MAX_MON_MOVES]);
 void MovesWithPP_(u32 sourceLine, struct moveWithPP moveWithPP[MAX_MON_MOVES]);
 void Friendship_(u32 sourceLine, u32 friendship);
@@ -994,7 +994,7 @@ struct MoveContext
 
 struct ItemContext
 {
-    u16 itemId;
+    enum ItemId itemId;
     u16 explicitItemId:1;
     u16 partyIndex;
     u16 explicitPartyIndex:1;

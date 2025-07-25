@@ -83,8 +83,8 @@ static void ShowNumToToss(void);
 static void CloseBattlePyramidBagTextWindow(void);
 static bool8 LoadPyramidBagGfx(void);
 static bool8 LoadPyramidBagMenu(void);
-static void ShowItemIcon(u16, u8);
-static void CopyBagItemName(u8 *, u16);
+static void ShowItemIcon(enum ItemId, u8);
+static void CopyBagItemName(u8 *, enum ItemId);
 static void FreeItemIconSpriteByAltId(u8);
 static void PrintItemDescription(s32);
 static void PrintSelectorArrowAtPos(u8, u8);
@@ -618,11 +618,11 @@ static void SetBagItemsListTemplate(void)
     gMultiuseListMenuTemplate.maxShowed = gPyramidBagMenu->listMenuMaxShown;
 }
 
-static void CopyBagItemName(u8 *dst, u16 itemId)
+static void CopyBagItemName(u8 *dst, enum ItemId itemId)
 {
     if (GetItemPocket(itemId) == POCKET_BERRIES)
     {
-        ConvertIntToDecimalStringN(gStringVar1, ITEM_TO_BERRY(itemId), STR_CONV_MODE_LEADING_ZEROS, MAX_PYRAMID_ITEM_DIGITS);
+        ConvertIntToDecimalStringN(gStringVar1, GetBerryIndex(itemId), STR_CONV_MODE_LEADING_ZEROS, MAX_PYRAMID_ITEM_DIGITS);
         CopyItemName(itemId, gStringVar2);
         StringExpandPlaceholders(dst, gText_NumberItem_TMBerry);
     }
@@ -1590,7 +1590,7 @@ static void SpriteCB_BagWaitForShake(struct Sprite *sprite)
     }
 }
 
-static void ShowItemIcon(u16 itemId, bool8 isAlt)
+static void ShowItemIcon(enum ItemId itemId, bool8 isAlt)
 {
     u8 itemSpriteId;
     u8 *spriteId = &gPyramidBagMenu->spriteIds[isAlt + PBAG_SPRITE_ITEM_ICON];

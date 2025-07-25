@@ -72,7 +72,7 @@
 struct SpeciesItem
 {
     u16 species;
-    u16 item;
+    enum ItemId item;
 };
 
 static u16 CalculateBoxMonChecksum(struct BoxPokemon *boxMon);
@@ -3706,7 +3706,7 @@ void CopyPartyMonToBattleData(u32 battler, u32 partyIndex)
     ClearTemporarySpeciesSpriteData(battler, FALSE, FALSE);
 }
 
-bool8 ExecuteTableBasedItemEffect(struct Pokemon *mon, u16 item, u8 partyIndex, u8 moveIndex)
+bool8 ExecuteTableBasedItemEffect(struct Pokemon *mon, enum ItemId item, u8 partyIndex, u8 moveIndex)
 {
     return PokemonUseItemEffects(mon, item, partyIndex, moveIndex, FALSE);
 }
@@ -3747,7 +3747,7 @@ const u32 sExpCandyExperienceTable[] = {
 };
 
 // Returns TRUE if the item has no effect on the Pokémon, FALSE otherwise
-bool8 PokemonUseItemEffects(struct Pokemon *mon, u16 item, u8 partyIndex, u8 moveIndex, bool8 usedByAI)
+bool8 PokemonUseItemEffects(struct Pokemon *mon, enum ItemId item, u8 partyIndex, u8 moveIndex, bool8 usedByAI)
 {
     u32 dataUnsigned;
     s32 dataSigned, evCap;
@@ -4230,7 +4230,7 @@ bool8 HealStatusConditions(struct Pokemon *mon, u32 healMask, u8 battler)
     }
 }
 
-u8 GetItemEffectParamOffset(u32 battler, u16 itemId, u8 effectByte, u8 effectBit)
+u8 GetItemEffectParamOffset(u32 battler, enum ItemId itemId, u8 effectByte, u8 effectBit)
 {
     const u8 *temp;
     const u8 *itemEffect;
@@ -4360,7 +4360,7 @@ static void BufferStatRoseMessage(s32 statIdx)
     BattleStringExpandPlaceholdersToDisplayedString(gText_DefendersStatRose);
 }
 
-u8 *UseStatIncreaseItem(u16 itemId)
+u8 *UseStatIncreaseItem(enum ItemId itemId)
 {
     const u8 *itemEffect;
 

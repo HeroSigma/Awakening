@@ -95,14 +95,6 @@ enum ItemEffect
 #define CRITICAL_HIT_BLOCKED -1
 #define CRITICAL_HIT_ALWAYS  -2
 
-// for Natural Gift and Fling
-struct TypePower
-{
-    u8 type;
-    u8 power;
-    u16 effect;
-};
-
 enum MoveSuccessOrder
 {
     CANCELLER_FLAGS,
@@ -152,8 +144,6 @@ enum MoveCanceller
     MOVE_STEP_BREAK,
     MOVE_STEP_REMOVES_STATUS,
 };
-
-extern const struct TypePower gNaturalGiftTable[];
 
 struct DamageContext
 {
@@ -298,7 +288,7 @@ bool32 IsBattlerUltraBursted(u32 battler);
 u16 GetBattleFormChangeTargetSpecies(u32 battler, enum FormChanges method);
 bool32 TryBattleFormChange(u32 battler, enum FormChanges method);
 bool32 DoBattlersShareType(u32 battler1, u32 battler2);
-bool32 CanBattlerGetOrLoseItem(u32 battler, u16 itemId);
+bool32 CanBattlerGetOrLoseItem(u32 battler, enum ItemId itemId);
 u32 GetBattlerVisualSpecies(u32 battler);
 bool32 TryClearIllusion(u32 battler, u32 caseID);
 u32 GetIllusionMonSpecies(u32 battler);
@@ -313,17 +303,17 @@ bool32 CanFling(u32 battler);
 bool32 IsTelekinesisBannedSpecies(u16 species);
 bool32 IsHealBlockPreventingMove(u32 battler, u32 move);
 bool32 IsBelchPreventingMove(u32 battler, u32 move);
-bool32 HasEnoughHpToEatBerry(u32 battler, u32 hpFraction, u32 itemId);
+bool32 HasEnoughHpToEatBerry(u32 battler, u32 hpFraction, enum ItemId itemId);
 bool32 IsPartnerMonFromSameTrainer(u32 battler);
 enum DamageCategory GetCategoryBasedOnStats(u32 battler);
 void SetShellSideArmCategory(void);
 bool32 MoveIsAffectedBySheerForce(u32 move);
 bool32 TestIfSheerForceAffected(u32 battler, u16 move);
 void TryRestoreHeldItems(void);
-bool32 CanStealItem(u32 battlerStealing, u32 battlerItem, u16 item);
+bool32 CanStealItem(u32 battlerStealing, u32 battlerItem, enum ItemId item);
 void TrySaveExchangedItem(u32 battler, u16 stolenItem);
 bool32 IsPartnerMonFromSameTrainer(u32 battler);
-enum ItemEffect TryHandleSeed(u32 battler, u32 terrainFlag, u32 statId, u32 itemId, enum ItemCaseId caseID);
+enum ItemEffect TryHandleSeed(u32 battler, u32 terrainFlag, u32 statId, enum ItemId itemId, enum ItemCaseId caseID);
 bool32 IsBattlerAffectedByHazards(u32 battler, bool32 toxicSpikes);
 void SortBattlersBySpeed(u8 *battlers, bool32 slowToFast);
 bool32 CompareStat(u32 battler, u8 statId, u8 cmpTo, u8 cmpKind);
@@ -396,7 +386,7 @@ bool32 TrySwitchInEjectPack(enum ItemCaseId caseID);
 u32 GetMonVolatile(u32 battler, enum Volatile _volatile);
 void SetMonVolatile(u32 battler, enum Volatile _volatile, u32 newValue);
 u32 TryBoosterEnergy(u32 battler, u32 ability, enum ItemCaseId caseID);
-bool32 ItemHealMonVolatile(u32 battler, u16 itemId);
+bool32 ItemHealMonVolatile(u32 battler, enum ItemId itemId);
 void PushHazardTypeToQueue(u32 side, enum Hazards hazardType);
 bool32 IsHazardOnSide(u32 side, enum Hazards hazardType);
 bool32 AreAnyHazardsOnSide(u32 side);

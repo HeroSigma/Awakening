@@ -348,7 +348,7 @@ static void TryUpdateEvolutionTracker(u32 evolutionCondition, u32 upAmount, u16 
 static void AccuracyCheck(bool32 recalcDragonDarts, const u8 *nextInstr, const u8 *failInstr, u16 move);
 static void ResetValuesForCalledMove(void);
 static void TryRestoreDamageAfterCheekPouch(u32 battler);
-static bool32 TrySymbiosis(u32 battler, u32 itemId, bool32 moveEnd);
+static bool32 TrySymbiosis(u32 battler, enum ItemId itemId, bool32 moveEnd);
 
 static void Cmd_attackcanceler(void);
 static void Cmd_accuracycheck(void);
@@ -3445,7 +3445,7 @@ void SetMoveEffect(u32 battler, u32 effectBattler, bool32 primary, bool32 certai
         gBattlescriptCurrInstr++;
         break;
     case MOVE_EFFECT_INCINERATE:
-        if ((gBattleMons[gEffectBattler].item >= FIRST_BERRY_INDEX && gBattleMons[gEffectBattler].item <= LAST_BERRY_INDEX)
+        if (gItemsInfo[gBattleMons[gEffectBattler].item].pocket == POCKET_BERRIES
          || (B_INCINERATE_GEMS >= GEN_6 && GetBattlerHoldEffect(gEffectBattler, FALSE) == HOLD_EFFECT_GEMS))
         {
             gLastUsedItem = gBattleMons[gEffectBattler].item;
@@ -4506,7 +4506,7 @@ static bool32 BattleTypeAllowsExp(void)
 static u32 GetMonHoldEffect(struct Pokemon *mon)
 {
     enum ItemHoldEffect holdEffect;
-    u32 item = GetMonData(mon, MON_DATA_HELD_ITEM);
+    enum ItemId item = GetMonData(mon, MON_DATA_HELD_ITEM);
 
     if (item == ITEM_ENIGMA_BERRY_E_READER)
     #if FREE_ENIGMA_BERRY == FALSE
@@ -6835,7 +6835,7 @@ static void Cmd_moveend(void)
             case EFFECT_NATURAL_GIFT:
                 if (!(gHitMarker & HITMARKER_UNABLE_TO_USE_MOVE) && GetItemPocket(gBattleMons[gBattlerAttacker].item) == POCKET_BERRIES)
                 {
-                    u32 item = gBattleMons[gBattlerAttacker].item;
+                    enum ItemId item = gBattleMons[gBattlerAttacker].item;
                     gBattleMons[gBattlerAttacker].item = ITEM_NONE;
                     gBattleStruct->battlerState[gBattlerAttacker].canPickupItem = TRUE;
                     gBattleStruct->usedHeldItems[gBattlerPartyIndexes[gBattlerAttacker]][GetBattlerSide(gBattlerAttacker)] = item;
@@ -8581,7 +8581,7 @@ static void Cmd_setgravity(void)
     }
 }
 
-static bool32 TryCheekPouch(u32 battler, u32 itemId)
+static bool32 TryCheekPouch(u32 battler, enum ItemId itemId)
 {
     if (GetItemPocket(itemId) == POCKET_BERRIES
         && GetBattlerAbility(battler) == ABILITY_CHEEK_POUCH
@@ -8630,7 +8630,7 @@ static void BestowItem(u32 battlerAtk, u32 battlerDef)
 }
 
 // Called by Cmd_removeitem. itemId represents the item that was removed, not being given.
-static bool32 TrySymbiosis(u32 battler, u32 itemId, bool32 moveEnd)
+static bool32 TrySymbiosis(u32 battler, enum ItemId itemId, bool32 moveEnd)
 {
     if (!gBattleStruct->itemLost[B_SIDE_PLAYER][gBattlerPartyIndexes[battler]].stolen
         && gBattleStruct->changedItems[battler] == ITEM_NONE
@@ -8659,7 +8659,7 @@ static void Cmd_removeitem(void)
     CMD_ARGS(u8 battler);
 
     u32 battler;
-    u16 itemId = 0;
+    enum ItemId itemId = 0;
 
     if (gBattleScripting.overrideBerryRequirements)
     {
@@ -14865,7 +14865,7 @@ void BS_JumpIfCantLoseItem(void)
 {
     NATIVE_ARGS(u8 battler, const u8 *jumpInstr);
     u8 battler = GetBattlerForBattleScript(cmd->battler);
-    u16 item = gBattleMons[battler].item;
+    enum ItemId item = gBattleMons[battler].item;
 
     if (item == ITEM_NONE || !CanBattlerGetOrLoseItem(battler, item))
         gBattlescriptCurrInstr = cmd->jumpInstr;
@@ -17894,7 +17894,7 @@ void BS_TryTerrainSeed(void)
     if (GetBattlerHoldEffect(battler, TRUE) == HOLD_EFFECT_SEEDS)
     {
         enum ItemEffect effect = ITEM_NO_EFFECT;
-        u16 item = gBattleMons[battler].item;
+        enum ItemId item = gBattleMons[battler].item;
         switch (GetBattlerHoldEffectParam(battler))
         {
         case HOLD_EFFECT_PARAM_ELECTRIC_TERRAIN:
