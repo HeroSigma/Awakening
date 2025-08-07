@@ -5,6 +5,7 @@
 #include "constants/battle.h"
 #include "constants/battle_move_effects.h"
 #include "constants/battle_string_ids.h"
+#include "constants/battle_z_move_effects.h"
 #include "constants/moves.h"
 
 // For defining EFFECT_HIT etc. with battle TV scores and flags etc.
@@ -65,16 +66,17 @@ struct MoveInfo
     const u8 *name;
     const u8 *description;
     enum BattleMoveEffects effect;
-    u16 type:5;     // Up to 32
-    enum DamageCategory category:2;
-    u16 power:9;    // up to 511
+    enum PokemonType type;
+    enum DamageCategory category;
     // end of word
-    u16 accuracy:7;
-    u16 target:9;
+    u16 power;
+    u8 accuracy;
     u8 pp;
-    union {
-        u8 effect;
-        u8 powerOverride;
+    // end of word
+    u16 target;
+    union PACKED {
+        enum ZMoveEffect effect;
+        u16 powerOverride;
     } zMove;
     // end of word
     s32 priority:4;
