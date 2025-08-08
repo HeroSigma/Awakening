@@ -115,6 +115,15 @@ static u32 GetParametrizedHP(u32 move, u32 variation)
     return 9997;
 }
 
+static bool32 GetParametrizedShinyness(u32 move, u32 variation)
+{
+    if ((gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2)
+        || (move == MOVE_SYRUP_BOMB && variation == 1)
+        )
+        return TRUE;
+    return FALSE;
+}
+
 static bool32 TargetHasToMove(u32 move) // Opponent needs to hit the player first
 {
     if (gMovesInfo[move].effect == EFFECT_COUNTER
@@ -178,6 +187,7 @@ static u32 GetVariationsNumber(u32 move, bool8 isDouble)
     else if (gMovesInfo[move].effect == EFFECT_CURSE
         || gMovesInfo[move].effect == EFFECT_PRESENT
         || (isDouble && gMovesInfo[move].effect == EFFECT_TERA_STARSTORM)
+        || move == MOVE_SYRUP_BOMB
         || gMovesInfo[move].effect == EFFECT_MAGNITUDE)
         variationsNumber = 2;
     else
@@ -560,7 +570,7 @@ SINGLE_BATTLE_TEST("Move Animations don't leak when used - Singles (player to op
             if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
             if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
             if (friendship) Friendship(friendship);
-            if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+            if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
         }
         PLAYER(SPECIES_WOBBUFFET)   {
             Gender(MON_MALE); MaxHP(9999); Moves(MOVE_POUND);
@@ -606,7 +616,7 @@ SINGLE_BATTLE_TEST("Move Animations don't leak when used - Singles (opponent to 
             if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
             if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
             if (friendship) Friendship(friendship);
-            if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+            if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
         }
         OPPONENT(SPECIES_WOBBUFFET)   {
             Gender(MON_MALE); MaxHP(9999); Moves(MOVE_POUND);
@@ -657,7 +667,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         PLAYER(species) {
@@ -668,7 +678,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         PLAYER(SPECIES_WOBBUFFET) {
@@ -725,7 +735,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         OPPONENT(species) {
@@ -735,7 +745,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         OPPONENT(SPECIES_WOBBUFFET) {
@@ -794,7 +804,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         PLAYER(species) {
@@ -804,7 +814,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         PLAYER(SPECIES_WOBBUFFET) {
@@ -863,7 +873,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         OPPONENT(species) {
@@ -873,7 +883,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         OPPONENT(SPECIES_WOBBUFFET) {
@@ -932,7 +942,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         PLAYER(species) {
@@ -942,7 +952,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         PLAYER(SPECIES_WOBBUFFET) {
@@ -1001,7 +1011,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         OPPONENT(species) {
@@ -1011,7 +1021,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         OPPONENT(SPECIES_WOBBUFFET) {
@@ -1070,7 +1080,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         PLAYER(species) {
@@ -1080,7 +1090,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         PLAYER(SPECIES_WOBBUFFET) {
@@ -1139,7 +1149,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         OPPONENT(species) {
@@ -1149,7 +1159,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
                 if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
                 if (friendship) Friendship(friendship);
-                if (gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2) Shiny(TRUE);
+                if (GetParametrizedShinyness(move, variation)) Shiny(TRUE);
             }
         }
         OPPONENT(SPECIES_WOBBUFFET) {
