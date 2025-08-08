@@ -101,6 +101,20 @@ static u32 ParametrizeFriendship(u32 move, u32 variation)
     return 0;
 }
 
+static u32 GetParametrizedHP(u32 move, u32 variation)
+{
+    if (gMovesInfo[move].effect == EFFECT_POWER_BASED_ON_USER_HP && variation > 0)
+    {
+        if (variation == 1)
+            return 6000;
+        else if (variation == 2)
+            return 4000;
+        else if (variation == 3)
+            return 2000;
+    }
+    return 9997;
+}
+
 static bool32 TargetHasToMove(u32 move) // Opponent needs to hit the player first
 {
     if (gMovesInfo[move].effect == EFFECT_COUNTER
@@ -154,7 +168,9 @@ static u32 GetVariationsNumber(u32 move, bool8 isDouble)
         variationsNumber = 5;
     else if (gMovesInfo[move].effect == EFFECT_FRUSTRATION
         || gMovesInfo[move].effect == EFFECT_RETURN
-        || gMovesInfo[move].effect == EFFECT_IVY_CUDGEL)
+        || gMovesInfo[move].effect == EFFECT_IVY_CUDGEL
+        || move == MOVE_WATER_SPOUT //we don't use the effect because other moves with the water spout effect don't have animation variations
+        )
         variationsNumber = 4;
     else if (gMovesInfo[move].effect == EFFECT_SPIT_UP
         || gMovesInfo[move].effect == EFFECT_DRAGON_DARTS)
@@ -539,7 +555,7 @@ SINGLE_BATTLE_TEST("Move Animations don't leak when used - Singles (player to op
     }
     GIVEN {
         PLAYER(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
             if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
             if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
@@ -585,7 +601,7 @@ SINGLE_BATTLE_TEST("Move Animations don't leak when used - Singles (opponent to 
     }
     GIVEN {
         OPPONENT(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
             if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
             if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
@@ -635,7 +651,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
     }
     GIVEN {
         PLAYER(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == playerLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -645,7 +661,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
             }
         }
         PLAYER(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == playerRight)
             {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
@@ -703,7 +719,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
     }
     GIVEN {
         OPPONENT(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == opponentLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -713,7 +729,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
             }
         }
         OPPONENT(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == opponentRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -772,7 +788,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
     }
     GIVEN {
         PLAYER(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == playerLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -782,7 +798,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
             }
         }
         PLAYER(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == playerRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -841,7 +857,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
     }
     GIVEN {
         OPPONENT(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == opponentLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -851,7 +867,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
             }
         }
         OPPONENT(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == opponentRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -910,7 +926,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
     }
     GIVEN {
         PLAYER(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == playerLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -920,7 +936,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
             }
         }
         PLAYER(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == playerRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -979,7 +995,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
     }
     GIVEN {
         OPPONENT(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == opponentLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -989,7 +1005,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
             }
         }
         OPPONENT(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == opponentRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1048,7 +1064,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
     }
     GIVEN {
         PLAYER(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == playerLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1058,7 +1074,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
             }
         }
         PLAYER(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == playerRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1117,7 +1133,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
     }
     GIVEN {
         OPPONENT(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == opponentLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1127,7 +1143,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
             }
         }
         OPPONENT(species) {
-            HP(9997); MaxHP(9999); Item(ITEM_ORAN_BERRY);
+            HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(ITEM_ORAN_BERRY);
             if (attacker == opponentRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
