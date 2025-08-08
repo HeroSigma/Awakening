@@ -131,6 +131,18 @@ static u32 GetParametrizedItem(u32 move, u32 variation)
     return ITEM_ORAN_BERRY;
 }
 
+static u32 GetParametrizedLevel(u32 move, u32 variation)
+{
+    if (gMovesInfo[move].effect == EFFECT_LEVEL_DAMAGE && variation > 0)
+    {
+        if (variation == 1)
+            return 50;
+        else if (variation == 2)
+            return 20;
+    }
+    return 100;
+}
+
 static bool32 GetParametrizedShinyness(u32 move, u32 variation)
 {
     if ((gMovesInfo[move].effect == EFFECT_DRAGON_DARTS && variation == 2)
@@ -200,6 +212,7 @@ static u32 GetVariationsNumber(u32 move, bool8 isDouble)
         variationsNumber = 4;
     else if (gMovesInfo[move].effect == EFFECT_SPIT_UP
         || gMovesInfo[move].effect == EFFECT_SWALLOW
+        || move == MOVE_SEISMIC_TOSS
         || gMovesInfo[move].effect == EFFECT_DRAGON_DARTS)
         variationsNumber = 3;
     else if (gMovesInfo[move].effect == EFFECT_CURSE
@@ -599,6 +612,7 @@ SINGLE_BATTLE_TEST("Move Animations don't leak when used - Singles (player to op
     GIVEN {
         PLAYER(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
             if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
             if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
@@ -645,6 +659,7 @@ SINGLE_BATTLE_TEST("Move Animations don't leak when used - Singles (opponent to 
     GIVEN {
         OPPONENT(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
             if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
             if (species == SPECIES_KLINKLANG) Ability(ABILITY_PLUS);
@@ -695,6 +710,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
     GIVEN {
         PLAYER(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == playerLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -705,6 +721,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
         }
         PLAYER(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == playerRight)
             {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
@@ -763,6 +780,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
     GIVEN {
         OPPONENT(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == opponentLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -773,6 +791,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
         }
         OPPONENT(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == opponentRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -832,6 +851,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
     GIVEN {
         PLAYER(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == playerLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -842,6 +862,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerLeft t
         }
         PLAYER(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == playerRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -901,6 +922,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
     GIVEN {
         OPPONENT(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == opponentLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -911,6 +933,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
         }
         OPPONENT(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == opponentRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -970,6 +993,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
     GIVEN {
         PLAYER(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == playerLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -980,6 +1004,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
         }
         PLAYER(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == playerRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1039,6 +1064,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
     GIVEN {
         OPPONENT(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == opponentLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1049,6 +1075,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentLeft
         }
         OPPONENT(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == opponentRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1108,6 +1135,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
     GIVEN {
         PLAYER(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == playerLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1118,6 +1146,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (playerRight 
         }
         PLAYER(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == playerRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1177,6 +1206,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
     GIVEN {
         OPPONENT(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == opponentLeft) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
@@ -1187,6 +1217,7 @@ DOUBLE_BATTLE_TEST("Move Animations don't leak when used - Doubles (opponentRigh
         }
         OPPONENT(species) {
             HP(GetParametrizedHP(move, variation)); MaxHP(9999); Item(GetParametrizedItem(move, variation));
+            Level(GetParametrizedLevel(move, variation));
             if (attacker == opponentRight) {
                 if (species == SPECIES_WOBBUFFET) Gender(MON_FEMALE);
                 if (gMovesInfo[move].effect == EFFECT_LAST_RESORT) Moves(move, MOVE_POUND);
