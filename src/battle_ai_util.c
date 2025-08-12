@@ -24,8 +24,7 @@
 #include "constants/moves.h"
 #include "constants/items.h"
 
-static u32 GetAIEffectGroup(enum BattleMoveEffects effect);
-static u32 GetAIEffectGroupFromMove(u32 battler, u32 move);
+static u32 GetAIEffectGroup(enum BattleMoveEffects effect, enum AIEffects useHelperBits);
 
 // Functions
 static bool32 AI_IsDoubleSpreadMove(u32 battlerAtk, u32 move)
@@ -1755,68 +1754,6 @@ bool32 IsConfusionMoveEffect(enum BattleMoveEffects moveEffect)
     }
 }
 
-bool32 IsHazardMove(u32 move)
-{
-    // Hazard setting moves like Stealth Rock, Spikes, etc.
-    u32 i, moveEffect = GetMoveEffect(move);
-    switch (moveEffect)
-    {
-    case EFFECT_CEASELESS_EDGE:
-    case EFFECT_SPIKES:
-    case EFFECT_STEALTH_ROCK:
-    case EFFECT_STICKY_WEB:
-    case EFFECT_STONE_AXE:
-    case EFFECT_TOXIC_SPIKES:
-        return TRUE;
-    }
-
-    u32 additionalEffectCount = GetMoveAdditionalEffectCount(move);
-    for (i = 0; i < additionalEffectCount; i++)
-    {
-        const struct AdditionalEffect *additionalEffect = GetMoveAdditionalEffectById(move, i);
-        switch (additionalEffect->moveEffect)
-        {
-        case MOVE_EFFECT_STEALTH_ROCK:
-        case MOVE_EFFECT_STEELSURGE:
-            return TRUE;
-        default:
-            break;
-        }
-    }
-    return FALSE;
-}
-
-bool32 IsHazardClearingMove(u32 move)
-{
-    // Hazard clearing effects like Rapid Spin, Tidy Up, etc.
-    u32 i, moveEffect = GetMoveEffect(move);
-    switch (moveEffect)
-    {
-    case EFFECT_RAPID_SPIN:
-    case EFFECT_TIDY_UP:
-        return TRUE;
-    case EFFECT_DEFOG:
-        if (B_DEFOG_EFFECT_CLEARING >= GEN_6)
-            return TRUE;
-        break;
-    }
-
-    u32 additionalEffectCount = GetMoveAdditionalEffectCount(move);
-    for (i = 0; i < additionalEffectCount; i++)
-    {
-        const struct AdditionalEffect *additionalEffect = GetMoveAdditionalEffectById(move, i);
-        switch (additionalEffect->moveEffect)
-        {
-        case MOVE_EFFECT_DEFOG:
-            return TRUE;
-        default:
-            break;
-        }
-    }
-
-    return FALSE;
-}
-
 bool32 IsAllyProtectingFromMove(u32 battlerAtk, u32 attackerMove, u32 allyMove)
 {
     enum BattleMoveEffects effect = GetMoveEffect(allyMove);
@@ -2254,7 +2191,7 @@ bool32 HasMoveWithAIEffect(u32 battler, u32 aiEffect)
     {
         if (moves[i] != MOVE_NONE && moves[i] != MOVE_UNAVAILABLE)
         {
-            if (GetAIEffectGroupFromMove(battler, moves[i]) & aiEffect)
+            if (GetAIEffectGroupFromBattlerMove(battler, moves[i], USE_HELPER_BITS) & aiEffect)
                 return TRUE;
         }
     }
@@ -2285,7 +2222,7 @@ bool32 HasBattlerSideMoveWithAIEffect(u32 battler, u32 aiEffect)
 // It matches both on move effect and on AI move effect; eg, EFFECT_HAZE will also bring up Freezy Frost or Clear Smog, anything with AI_EFFECT_RESET_STATS.
 bool32 HasBattlerSideUsedMoveWithEffect(u32 battler, u32 effect)
 {
-    u32 aiEffect = GetAIEffectGroup(effect);
+    u32 aiEffect = GetAIEffectGroup(effect, IGNORE_HELPER_BITS);
     u32 i;
     for (i = 0; i < MAX_MON_MOVES; i++)
     {
@@ -2294,7 +2231,7 @@ bool32 HasBattlerSideUsedMoveWithEffect(u32 battler, u32 effect)
 
         if (aiEffect != AI_EFFECT_NONE)
         {
-            if (GetAIEffectGroupFromMove(battler, gBattleHistory->usedMoves[battler][i]) & aiEffect)
+            if (GetAIEffectGroupFromBattlerMove(battler, gBattleHistory->usedMoves[battler][i], IGNORE_HELPER_BITS) & aiEffect)
                 return TRUE;
         }
 
@@ -2305,7 +2242,7 @@ bool32 HasBattlerSideUsedMoveWithEffect(u32 battler, u32 effect)
 
             if (aiEffect != AI_EFFECT_NONE)
             {
-                if (GetAIEffectGroupFromMove(battler, gBattleHistory->usedMoves[BATTLE_PARTNER(battler)][i]) & aiEffect)
+                if (GetAIEffectGroupFromBattlerMove(battler, gBattleHistory->usedMoves[BATTLE_PARTNER(battler)][i], IGNORE_HELPER_BITS) & aiEffect)
                     return TRUE;
             }
         }
@@ -2662,10 +2599,10 @@ bool32 IsStatLoweringEffect(enum BattleMoveEffects effect)
     case EFFECT_SPECIAL_DEFENSE_DOWN_2:
     case EFFECT_ACCURACY_DOWN_2:
     case EFFECT_EVASION_DOWN_2:
-    case EFFECT_TICKLE:
     case EFFECT_CAPTIVATE:
-    case EFFECT_NOBLE_ROAR:
     case EFFECT_MEMENTO:
+    case EFFECT_NOBLE_ROAR:
+    case EFFECT_TICKLE:
         return TRUE;
     default:
         return FALSE;
@@ -3866,8 +3803,15 @@ bool32 AreMovesEquivalent(u32 battlerAtk, u32 battlerAtkPartner, u32 move, u32 p
     if (GetBestDmgMoveFromBattler(battlerAtk, battlerDef, AI_ATTACKING) == move)
         return FALSE;
 
-    u32 atkEffect = GetAIEffectGroupFromMove(battlerAtk, move);
-    u32 partnerEffect = GetAIEffectGroupFromMove(battlerAtkPartner, partnerMove);
+    u32 atkEffect = GetAIEffectGroupFromBattlerMove(battlerAtk, move, IGNORE_HELPER_BITS);
+    u32 partnerEffect = GetAIEffectGroupFromBattlerMove(battlerAtkPartner, partnerMove, IGNORE_HELPER_BITS);
+
+    // Doubling up on Spikes effects is OK.
+    atkEffect &= ~AI_EFFECT_CAN_STACK;
+
+    // treat one status as any status
+    if (atkEffect | AI_EFFECT_NONVOLATILE)
+        atkEffect |= AI_EFFECT_NONVOLATILE;
 
     // shared bits indicate they're meaningfully the same in some way
     if (atkEffect & partnerEffect)
@@ -3884,12 +3828,15 @@ bool32 AreMovesEquivalent(u32 battlerAtk, u32 battlerAtkPartner, u32 move, u32 p
     return FALSE;
 }
 
-static u32 GetAIEffectGroup(enum BattleMoveEffects effect)
+static u32 GetAIEffectGroup(enum BattleMoveEffects effect, enum AIEffects useHelperBits)
 {
     u32 aiEffect = AI_EFFECT_NONE;
 
     switch (effect)
     {
+    case EFFECT_TOXIC_THREAD:
+        aiEffect |= AI_EFFECT_POISON;
+        break;
     case EFFECT_SUNNY_DAY:
     case EFFECT_RAIN_DANCE:
     case EFFECT_SANDSTORM:
@@ -3951,58 +3898,187 @@ static u32 GetAIEffectGroup(enum BattleMoveEffects effect)
     case EFFECT_WORRY_SEED:
         aiEffect |= AI_EFFECT_CHANGE_ABILITY;
         break;
+    case EFFECT_CEASELESS_EDGE:
+    case EFFECT_SPIKES:
+        aiEffect |= AI_EFFECT_SPIKES;
+        break;
+    case EFFECT_STEALTH_ROCK:
+    case EFFECT_STONE_AXE:
+        aiEffect |= AI_EFFECT_STEALTH_ROCK;
+        break;
+    case EFFECT_STICKY_WEB:
+        aiEffect |= AI_EFFECT_STICKY_WEB;
+        break;
+    case EFFECT_TOXIC_SPIKES:
+        aiEffect |= AI_EFFECT_TOXIC_SPIKES;
+        break;
+    default:
+        break;
+    }
+
+    return aiEffect;
+}
+
+static u32 AdditionalEffectToAIEffect(u32 moveEffect)
+{
+    u32 aiEffect = 0;
+
+    switch (moveEffect)
+    {
+    case MOVE_EFFECT_SLEEP:
+    case MOVE_EFFECT_YAWN_FOE:
+        aiEffect |= AI_EFFECT_SLEEP;
+        break;
+    case MOVE_EFFECT_POISON_SIDE:
+    case MOVE_EFFECT_POISON:
+    case MOVE_EFFECT_TOXIC:
+        aiEffect |= AI_EFFECT_POISON;
+        break;
+    case MOVE_EFFECT_BURN:
+        aiEffect |= AI_EFFECT_BURN;
+        break;
+    case MOVE_EFFECT_FREEZE:
+        aiEffect |= AI_EFFECT_FREEZE;
+        break;
+    case MOVE_EFFECT_FROSTBITE:
+        aiEffect |= AI_EFFECT_FROSTBITE;
+        break;
+    case MOVE_EFFECT_PARALYSIS:
+    case MOVE_EFFECT_PARALYZE_SIDE:
+        aiEffect |= AI_EFFECT_PARALYSIS;
+        break;
+    case MOVE_EFFECT_EFFECT_SPORE_SIDE:
+    case MOVE_EFFECT_DIRE_CLAW:
+        aiEffect |= AI_EFFECT_EFFECT_SPORE;
+        break;
+    case MOVE_EFFECT_SUN:
+    case MOVE_EFFECT_RAIN:
+    case MOVE_EFFECT_SANDSTORM:
+    case MOVE_EFFECT_HAIL:
+        aiEffect |= AI_EFFECT_WEATHER;
+        break;
+    case MOVE_EFFECT_ELECTRIC_TERRAIN:
+    case MOVE_EFFECT_GRASSY_TERRAIN:
+    case MOVE_EFFECT_MISTY_TERRAIN:
+    case MOVE_EFFECT_PSYCHIC_TERRAIN:
+        aiEffect |= AI_EFFECT_TERRAIN;
+        break;
+    case MOVE_EFFECT_DEFOG:
+        aiEffect |= AI_EFFECT_CLEAR_HAZARDS | AI_EFFECT_BREAK_SCREENS;
+        break;
+    case MOVE_EFFECT_CLEAR_SMOG:
+    case MOVE_EFFECT_HAZE:
+        aiEffect |= AI_EFFECT_RESET_STATS;
+        break;
+    case MOVE_EFFECT_TORMENT_SIDE:
+        aiEffect |= AI_EFFECT_TORMENT;
+        break;
+    case MOVE_EFFECT_LIGHT_SCREEN:
+        aiEffect |= AI_EFFECT_LIGHT_SCREEN;
+        break;
+    case MOVE_EFFECT_REFLECT:
+        aiEffect |= AI_EFFECT_REFLECT;
+        break;
+    case MOVE_EFFECT_AURORA_VEIL:
+        aiEffect |= AI_EFFECT_AURORA_VEIL;
+        break;
+    case MOVE_EFFECT_GRAVITY:
+        aiEffect |= AI_EFFECT_GRAVITY;
+        break;
+    case MOVE_EFFECT_STEALTH_ROCK:
+        aiEffect |= AI_EFFECT_STEALTH_ROCK;
+    case MOVE_EFFECT_STEELSURGE:
+        aiEffect |= AI_EFFECT_STEELSURGE;
     default:
         break;
     }
     return aiEffect;
 }
 
-static u32 GetAIEffectGroupFromMove(u32 battler, u32 move)
+// Needs to not take a battler arg for switching purposes.
+bool32 DoesMoveHaveAIEffect(u32 move, u32 checkedEffect)
 {
-    u32 aiEffect = GetAIEffectGroup(GetMoveEffect(move));
+    u32 aiEffect = GetAIEffectGroup(GetMoveEffect(move), USE_HELPER_BITS);
 
     u32 i;
     u32 additionalEffectCount = GetMoveAdditionalEffectCount(move);
     for (i = 0; i < additionalEffectCount; i++)
     {
-        switch (GetMoveAdditionalEffectById(move, i)->moveEffect)
+        const struct AdditionalEffect *additionalEffect = GetMoveAdditionalEffectById(move, i);
+        aiEffect |= AdditionalEffectToAIEffect(additionalEffect->moveEffect);
+    }
+
+    return aiEffect & checkedEffect;
+}
+
+u32 GetAIEffectGroupFromBattlerMove(u32 battler, u32 move, enum AIEffects useHelperBits)
+{
+    enum BattleMoveEffects effect = GetMoveEffect(move);
+    u32 aiEffect = GetAIEffectGroup(effect, useHelperBits);
+    u32 ability = gAiLogicData->abilities[battler];
+
+    aiEffect |= AdditionalEffectToAIEffect(GetMoveNonVolatileStatus(move));
+
+    u32 i;
+    u32 additionalEffectCount = GetMoveAdditionalEffectCount(move);
+    for (i = 0; i < additionalEffectCount; i++)
+    {
+        const struct AdditionalEffect *additionalEffect = GetMoveAdditionalEffectById(move, i);
+
+        if (useHelperBits == USE_HELPER_BITS)
         {
-        case MOVE_EFFECT_SUN:
-        case MOVE_EFFECT_RAIN:
-        case MOVE_EFFECT_SANDSTORM:
-        case MOVE_EFFECT_HAIL:
-            aiEffect |= AI_EFFECT_WEATHER;
-            break;
-        case MOVE_EFFECT_ELECTRIC_TERRAIN:
-        case MOVE_EFFECT_GRASSY_TERRAIN:
-        case MOVE_EFFECT_MISTY_TERRAIN:
-        case MOVE_EFFECT_PSYCHIC_TERRAIN:
-            aiEffect |= AI_EFFECT_TERRAIN;
-            break;
-        case MOVE_EFFECT_DEFOG:
-            aiEffect |= AI_EFFECT_CLEAR_HAZARDS | AI_EFFECT_BREAK_SCREENS;
-            break;
-        case MOVE_EFFECT_CLEAR_SMOG:
-        case MOVE_EFFECT_HAZE:
-            aiEffect |= AI_EFFECT_RESET_STATS;
-            break;
-        case MOVE_EFFECT_TORMENT_SIDE:
-            aiEffect |= AI_EFFECT_TORMENT;
-            break;
-        case MOVE_EFFECT_LIGHT_SCREEN:
-            aiEffect |= AI_EFFECT_LIGHT_SCREEN;
-            break;
-        case MOVE_EFFECT_REFLECT:
-            aiEffect |= AI_EFFECT_REFLECT;
-            break;
-        case MOVE_EFFECT_AURORA_VEIL:
-            aiEffect |= AI_EFFECT_AURORA_VEIL;
-            break;
-        case MOVE_EFFECT_GRAVITY:
-            aiEffect |= AI_EFFECT_GRAVITY;
-            break;
-        default:
-            break;
+            if (additionalEffect->chance >= ASSUME_EFFECT_MAY_HAPPEN_THRESHOLD)
+                aiEffect |= AdditionalEffectToAIEffect(additionalEffect->moveEffect);
+        }
+        else
+        {
+            if (MoveEffectIsGuaranteed(battler, ability, additionalEffect))
+                aiEffect |= AdditionalEffectToAIEffect(additionalEffect->moveEffect);
+        }
+    }
+
+    // Applying helper bits based on move flags.
+    // The support bit only belongs on nondamaging moves.
+    if (useHelperBits == USE_HELPER_BITS)
+    {
+        if (IsBattleMoveStatus(move))
+        {
+            if (!(IsStatLoweringEffect(effect) || IsStatRaisingEffect(effect)))
+            {
+                switch (effect)
+                {
+                case EFFECT_CELEBRATE:
+                case EFFECT_DO_NOTHING:
+                case EFFECT_HAPPY_HOUR:
+                case EFFECT_HOLD_HANDS:
+                    break;
+                case EFFECT_PROTECT:
+                {
+                    enum ProtectMethod protectMethod = GetMoveProtectMethod(move);
+                    switch (protectMethod)
+                    {
+                    case PROTECT_QUICK_GUARD:
+                    case PROTECT_WIDE_GUARD:
+                        aiEffect |= AI_EFFECT_SUPPORT_BIT;
+                    default:
+                        break;
+                    }
+                    break;
+                }
+                default:
+                    aiEffect |= AI_EFFECT_SUPPORT_BIT;
+                }
+
+            if (aiEffect & AI_EFFECT_STRONG_SUPPORT)
+                aiEffect |= AI_EFFECT_SUPPORT_BIT;
+            else if (IsHealingMove(move))
+                aiEffect |= AI_EFFECT_SUPPORT_BIT;
+            }
+        }
+        // move does damage
+        else
+        {
+            aiEffect &= ~AI_EFFECT_SUPPORT_BIT;
         }
     }
 
@@ -4033,16 +4109,9 @@ bool32 PartnerMoveEffectIsStatusSameTarget(u32 battlerAtkPartner, u32 battlerDef
     if (!HasPartner(battlerAtkPartner))
         return FALSE;
 
-    enum BattleMoveEffects partnerEffect = GetMoveEffect(partnerMove);
-    u32 nonVolatileStatus = GetMoveNonVolatileStatus(partnerMove);
     if (partnerMove != MOVE_NONE
      && gBattleStruct->moveTarget[battlerAtkPartner] == battlerDef
-     && (nonVolatileStatus == MOVE_EFFECT_POISON
-       || nonVolatileStatus == MOVE_EFFECT_TOXIC
-       || nonVolatileStatus == MOVE_EFFECT_SLEEP
-       || nonVolatileStatus == MOVE_EFFECT_PARALYSIS
-       || nonVolatileStatus == MOVE_EFFECT_BURN
-       || partnerEffect == EFFECT_YAWN))
+     && (GetAIEffectGroupFromBattlerMove(battlerAtkPartner, partnerMove, IGNORE_HELPER_BITS) & AI_EFFECT_NONVOLATILE))
         return TRUE;
     return FALSE;
 }

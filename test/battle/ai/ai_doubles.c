@@ -138,6 +138,26 @@ AI_DOUBLE_BATTLE_TEST("AI won't use the same nondamaging move as its partner for
     }
 }
 
+AI_DOUBLE_BATTLE_TEST("AI uses Spikes alongside its partner.")
+{
+    u32 move;
+    PARAMETRIZE { move = MOVE_SPIKES; }
+    PARAMETRIZE { move = MOVE_TOXIC_SPIKES; }
+    GIVEN {
+        AI_FLAGS(AI_FLAG_CHECK_BAD_MOVE);
+        PLAYER(SPECIES_WOBBUFFET);
+        PLAYER(SPECIES_WOBBUFFET);
+        PLAYER(SPECIES_WOBBUFFET);
+        PLAYER(SPECIES_WOBBUFFET);
+        OPPONENT(SPECIES_WOBBUFFET) { Moves(move, MOVE_TACKLE); }
+        OPPONENT(SPECIES_WOBBUFFET) { Moves(move, MOVE_TACKLE); }
+        OPPONENT(SPECIES_WOBBUFFET) { Moves(move, MOVE_TACKLE); }
+        OPPONENT(SPECIES_WOBBUFFET) { Moves(move, MOVE_TACKLE); }
+    } WHEN {
+        TURN { EXPECT_MOVE(opponentLeft, move); EXPECT_MOVE(opponentRight, move); }
+    }
+}
+
 AI_DOUBLE_BATTLE_TEST("AI will not choose Earthquake if it damages the partner without a positive effect")
 {
     ASSUME(GetMoveTarget(MOVE_EARTHQUAKE) == MOVE_TARGET_FOES_AND_ALLY);
@@ -659,5 +679,18 @@ AI_DOUBLE_BATTLE_TEST("AI prefers to Fake Out the opponent vulnerable to flinchi
         OPPONENT(SPECIES_WOBBUFFET);
     } WHEN {
         TURN { EXPECT_MOVE(opponentLeft, MOVE_FAKE_OUT, target:playerRight); }
+    }
+}
+
+AI_DOUBLE_BATTLE_TEST("AI knows where to aim Taunt")
+{
+    GIVEN {
+        AI_FLAGS(AI_FLAG_CHECK_BAD_MOVE | AI_FLAG_TRY_TO_FAINT | AI_FLAG_CHECK_VIABILITY | AI_FLAG_DOUBLE_BATTLE | AI_FLAG_OMNISCIENT);
+        PLAYER(SPECIES_WOBBUFFET) { Moves(MOVE_SHELL_SMASH, MOVE_CELEBRATE); }
+        PLAYER(SPECIES_WOBBUFFET) { Moves(MOVE_FOLLOW_ME, MOVE_CELEBRATE); }
+        OPPONENT(SPECIES_WOBBUFFET) { Moves(MOVE_TAUNT, MOVE_HEADBUTT); }
+        OPPONENT(SPECIES_WOBBUFFET);
+    } WHEN {
+        TURN { EXPECT_MOVE(opponentLeft, MOVE_TAUNT, target:playerRight); }
     }
 }
