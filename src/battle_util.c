@@ -12110,9 +12110,7 @@ static u32 GetSleepTalkMove(void)
     {
         if (IsMoveSleepTalkBanned(gBattleMons[gBattlerAttacker].moves[i])
             || gBattleMoveEffects[GetMoveEffect(gBattleMons[gBattlerAttacker].moves[i])].twoTurnEffect)
-        {
             unusableMovesBits |= (1 << (i));
-        }
     }
 
     unusableMovesBits = CheckMoveLimitations(gBattlerAttacker, unusableMovesBits, ~(MOVE_LIMITATION_PP | MOVE_LIMITATION_CHOICE_ITEM));
