@@ -12000,9 +12000,7 @@ static u32 GetMirrorMoveMove(void)
         move = validMoves[Random() % validMovesCount];
 
     if (GetActiveGimmick(gBattlerAttacker) == GIMMICK_Z_MOVE && !IsBattleMoveStatus(move))
-    {
         move = GetTypeBasedZMove(move);
-    }
 
     return move;
 }
